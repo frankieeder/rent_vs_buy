@@ -1,6 +1,13 @@
 import streamlit as st
 from main import analyze_zip
 
+st.set_page_config(
+    page_title='Rent vs. Buy',
+    page_icon='📈',
+    layout="wide",
+    initial_sidebar_state="collapsed",
+    # menu_items=None
+)
 
 def main_page():
     st.write('Welcome')

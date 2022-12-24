@@ -2,6 +2,7 @@ import pandas as pd
 from pathlib import Path
 import plotly.express as px
 import plotly.graph_objects as go
+import streamlit as st
 
 # https://www.zillow.com/research/data/
 DATA_ROOT = Path('./data')
@@ -74,6 +75,7 @@ def pull_all_zhvi_data():
     dfs = tuple(read_single_file(f) for f in file_names)
     return dfs
 
+@st.experimental_singleton
 def pull_all_zhvi_data_melted():
     dfs = pull_all_zhvi_data()
     dfs_melted = [melt_df(df) for df in dfs]
@@ -131,6 +133,55 @@ def analyze_zip(zip_code):
         '4_br': px.colors.sequential.ice_r[3],
         '5_br': px.colors.sequential.ice_r[4],
     }
+    overall = filtered.pop(0)
+    single_family = filtered.pop(0)
+    condo = filtered.pop(0)
+
+    bedrooms = filtered
+    fig = go.Figure()
+    # Bedrooms
+    for i, bedroom_df in enumerate(bedrooms):
+        fig.add_trace(go.Scatter(
+            x=bedroom_df['Month'],
+            y=bedroom_df['ZHVI'],
+            mode='lines',
+            name=f'{i + 1} Bedroom',
+            line=dict(color=px.colors.sequential.ice[i], width=0.5),
+            fill='tonexty' if i > 0 else None,
+            legendgroup=zip_code,
+        ))
+
+    default_color = 'white'
+    # Single Family
+    fig.add_trace(go.Scatter(
+        x=single_family['Month'],
+        y=single_family['ZHVI'],
+        mode='lines',
+        name='Single Family',
+        line=dict(color=default_color, width=0.5, dash='dash'),
+        legendgroup=zip_code,
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=condo['Month'],
+        y=condo['ZHVI'],
+        mode='lines',
+        name='Condo/Co-Op',
+        line=dict(color=default_color, width=0.5, dash='dot'),
+        legendgroup=zip_code,
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=overall['Month'],
+        y=overall['ZHVI'],
+        mode='lines',
+        name='Overall',
+        line=dict(color=default_color, width=0.5),
+        legendgroup=zip_code,
+    ))
+    return fig
+
+
     for name, df in zip(color_map.keys(), filtered):
         df['name'] = name
         if name == 'single_family':
@@ -160,7 +211,7 @@ def home_prices_by_zip():
         id_vars=categorical,
         value_vars=months_of_interest,
         var_name='Month',
-        value_name='ZHVI'
+        value_name='ZHVI',
     )
     fig = px.line(zhvi_melted, x='Month', y='ZHVI', color='RegionName',
                   hover_data=['City', 'Metro', 'CountyName'])
