@@ -8,7 +8,7 @@ st.set_page_config(
     # menu_items=None
 )
 
-from main import analyze_zip, pull_all_zhvi_data_melted
+from plotting import analyze_zip
 from data.zillow import read_zillow_files_from_geography
 import plotly.graph_objects as go
 import plotly.express as px
