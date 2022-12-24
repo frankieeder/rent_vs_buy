@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+import io
 
 GEOGRAPHIES = {
     'Metro': 'Metro & US',
@@ -25,6 +26,18 @@ ZHVI_METRICS = {
     'bdrmcnt_5_uc_sfrcondo_tier_0.33_0.67_sm_sa_month': 'ZHVI 5+ Bedroom Time Series ($)',
 }
 
+DTYPE_OVERRIDES = {
+    'RegionID': 'int32',
+    'SizeRank': 'int32',
+    # 'RegionName': 'category',
+    'RegionType': 'category',
+    'StateName': 'category',
+    'State': 'category',
+    # 'City': 'category',
+    'Metro': 'category',
+    'CountyName': 'category',
+}
+
 
 def infer_zhvi_zillow_file_link(geography, zhvi_metric):
     return f"https://files.zillowstatic.com/research/public_csvs/zhvi/{geography}_zhvi_{zhvi_metric}.csv"
@@ -32,7 +45,8 @@ def infer_zhvi_zillow_file_link(geography, zhvi_metric):
 
 def read_zillow_file_from_link(link):
     df = pd.read_csv(link)
-    # df = df.set_index('RegionID')
+    float_cols = df.select_dtypes(include='float64').columns
+    df[float_cols] = df[float_cols].astype('float32')
     return df
 
 
@@ -40,10 +54,6 @@ def find_categorical_columns_zhvi_wide(zhvi_wide):
     month_start_index = zhvi_wide.columns.to_list().index('2000-01-31')  # TODO: This might be sketchy
     categorical = zhvi_wide.columns[:month_start_index].to_list()
     return categorical
-
-
-def find_categorical_columns_zhvi_melted(zhvi_melted):
-    return zhvi_melted.columns[:-2]
 
 
 def melt_df(zhvi_wide):
@@ -57,17 +67,57 @@ def melt_df(zhvi_wide):
         value_name='ZHVI'
     )
     zhvi_melted = zhvi_melted.dropna(subset='ZHVI')
+    zhvi_melted = zhvi_melted.astype({
+        'Month': 'category',
+        'ZHVI': 'float32'
+    })
+    zhvi_melted = zhvi_melted.reset_index(drop=True)
     return zhvi_melted
 
 
 @st.experimental_singleton
-def read_zillow_file_from_geography_and_metric(geography, zhvi_metric):
+def read_zillow_file_from_geography_and_metric_wide(geography, zhvi_metric):
     link = infer_zhvi_zillow_file_link(geography, zhvi_metric)
     df_wide = read_zillow_file_from_link(link)
-    # TODO: Is there an efficient way to separate this out if we need the underlying wide files?
+    return df_wide
+
+
+def read_zillow_file_from_geography_and_metric(geography, zhvi_metric):
+    df_wide = read_zillow_file_from_geography_and_metric_wide(geography, zhvi_metric)
+    # st.write(f"Total Wide: {df_wide.memory_usage().sum()}")
+    # st.write(df_wide.memory_usage())
+    # st.write(df_wide.dtypes)
+    # buffer = io.StringIO()
+    # df_wide.info(buf=buffer)
+    # st.text(buffer.getvalue())
+
+    overrideable_dtype_columns = set(df_wide.columns) & DTYPE_OVERRIDES.keys()
+    dtypes = {k: v for k, v in DTYPE_OVERRIDES.items() if k in overrideable_dtype_columns}
+    overrideable_dtype_columns = list(overrideable_dtype_columns)
+    df_wide[overrideable_dtype_columns] = df_wide[overrideable_dtype_columns].astype(dtypes)
+
+
+    # st.write(f"Total Wide w/ Types: {df_wide.memory_usage().sum()}")
+    # st.write(df_wide.memory_usage())
+    # st.write(df_wide.dtypes)
+    # buffer = io.StringIO()
+    # df_wide.info(buf=buffer)
+    # st.text(buffer.getvalue())
     df_melted = melt_df(df_wide)
+
+    # st.write(f"Total Melt: {df_melted.memory_usage().sum()}")
+    # st.write(df_melted.memory_usage())
+    # st.write(df_melted.dtypes)
+    # buffer = io.StringIO()
+    # df_melted.info(buf=buffer)
+    # st.text(buffer.getvalue())
     # TODO: Cast dtypes to categorical if needed to preserve space. Wide data may help for this too.
     return df_melted
+
+
+def read_zillow_files_from_geography_wide(geography):
+    dfs = tuple(read_zillow_file_from_geography_and_metric_wide(geography, m) for m in ZHVI_METRICS.keys())
+    return dfs
 
 
 def read_zillow_files_from_geography(geography):

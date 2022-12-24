@@ -9,8 +9,8 @@ st.set_page_config(
 )
 
 from plotting import analyze_region
-from data.zillow import read_zillow_files_from_geography
-from data.zillow import find_categorical_columns_zhvi_melted
+from data.zillow import read_zillow_files_from_geography_wide
+from data.zillow import find_categorical_columns_zhvi_wide
 from data.zillow import GEOGRAPHIES
 import plotly.graph_objects as go
 import plotly.express as px
@@ -39,9 +39,9 @@ def compare_regions():
         format_func=lambda g: GEOGRAPHIES[g],
     )
 
-    zhvi_dfs = read_zillow_files_from_geography(geography)
+    zhvi_dfs = read_zillow_files_from_geography_wide(geography)
     zhvi_df_overall = zhvi_dfs[0]
-    zhvi_categorical_columns = find_categorical_columns_zhvi_melted(zhvi_df_overall)
+    zhvi_categorical_columns = find_categorical_columns_zhvi_wide(zhvi_df_overall)
     zhvi_categories_df = zhvi_df_overall[zhvi_categorical_columns]
 
     # Isolate and sort options for regions
