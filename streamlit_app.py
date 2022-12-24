@@ -31,7 +31,6 @@ def compare_regions():
         label='Geography',
         options=GEOGRAPHIES.keys(),
         format_func=lambda g: GEOGRAPHIES[g],
-        index=4,
     )
 
     zhvi_dfs = read_zillow_files_from_geography(geography)
@@ -40,11 +39,13 @@ def compare_regions():
     options_df = options_df.drop_duplicates().sort_values('RegionName')
     all_region_ids_series = options_df['RegionID']
     all_region_ids_to_names = options_df.set_index('RegionID')['RegionName'].to_dict()
+    # Set region default to 102001 (RegionID of US) if using metro (i.e. default view)
+    region_default = [102001] if geography == 'Metro' else all_region_ids_series.values[0]
     region_ids = st.multiselect(
         label=GEOGRAPHIES[geography],
         options=all_region_ids_series,  # Use ID instead of name directly to avoid collisions
         max_selections=3,
-        default=all_region_ids_series.values[0],
+        default=region_default,
         format_func=lambda r: all_region_ids_to_names[r]
     )
     fig = go.Figure()
