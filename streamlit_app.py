@@ -9,6 +9,7 @@ st.set_page_config(
 )
 
 from main import analyze_zip, pull_all_zhvi_data_melted
+from data.zillow import read_zillow_files_from_geography
 import plotly.graph_objects as go
 import plotly.express as px
 
@@ -19,19 +20,21 @@ COLORS = [
     px.colors.sequential.PuRd,
 ]
 
+
 def main_page():
     st.write('Welcome')
 
 
 def compare_zips():
     st.write('Compare Zips...')
-    zhvi = pull_all_zhvi_data_melted()[0]
-    all_zips = zhvi['RegionName'].unique()
+    zhvi_dfs = read_zillow_files_from_geography('Zip')
+
+    all_zips = zhvi_dfs[0]['RegionName'].unique()
     zip_codes = st.multiselect(
         label='Zip Code',
         options=all_zips,
         max_selections=3,
-        default=[90210, 90010, 90057],
+        default=[90210],
     )
     fig = go.Figure()
     with st.spinner('Loading...'):
