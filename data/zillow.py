@@ -32,7 +32,7 @@ def infer_zhvi_zillow_file_link(geography, zhvi_metric):
 
 def read_zillow_file_from_link(link):
     df = pd.read_csv(link)
-    df = df.set_index('RegionID')
+    # df = df.set_index('RegionID')
     return df
 
 

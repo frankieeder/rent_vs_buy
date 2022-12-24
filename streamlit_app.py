@@ -36,17 +36,21 @@ def compare_regions():
 
     zhvi_dfs = read_zillow_files_from_geography(geography)
 
-    all_regions = zhvi_dfs[0]['RegionName'].unique()  # TODO: Should probably base on ID not Name to avoid collision
-    regions = st.multiselect(
+    options_df = zhvi_dfs[0][['RegionID', 'RegionName']]
+    options_df = options_df.drop_duplicates().sort_values('RegionName')
+    all_region_ids_series = options_df['RegionID']
+    all_region_ids_to_names = options_df.set_index('RegionID')['RegionName'].to_dict()
+    region_ids = st.multiselect(
         label=GEOGRAPHIES[geography],
-        options=all_regions,
+        options=all_region_ids_series,  # Use ID instead of name directly to avoid collisions
         max_selections=3,
-        default=all_regions[0],
+        default=all_region_ids_series.values[0],
+        format_func=lambda r: all_region_ids_to_names[r]
     )
     fig = go.Figure()
     with st.spinner('Loading...'):
-        for i, region in enumerate(regions):
-            traces = analyze_region(geography, region, colors=COLORS[i])
+        for i, region_id in enumerate(region_ids):
+            traces = analyze_region(geography, region_id, colors=COLORS[i])
             fig.add_traces(traces)
         st.plotly_chart(fig, use_container_width=True)
 

@@ -1,18 +1,21 @@
 from data.zillow import read_zillow_files_from_geography
 import plotly.express as px
 import plotly.graph_objects as go
+import streamlit as st
 
 
 def analyze_region(
         geography: str,
-        region_name: str,  # TODO: use ID instead
+        region_id: int,
         colors=px.colors.sequential.ice_r
 ):
     unfiltered = read_zillow_files_from_geography(geography)
-    filtered = [df.loc[df['RegionName'] == region_name] for df in unfiltered]
+    filtered = [df.loc[df['RegionID'] == region_id] for df in unfiltered]
     overall = filtered.pop(0)
     single_family = filtered.pop(0)
     condo = filtered.pop(0)
+
+    region_name = overall['RegionName'].values[0]
 
     bedrooms = filtered
     traces = []
@@ -28,7 +31,7 @@ def analyze_region(
             name=f'{i + 1} Bedroom',
             line=dict(color=colors[i+2], width=0.5),
             fill='tonexty' if i > 0 else None,
-            legendgroup=str(region_name),
+            legendgroup=str(region_id),
         ))
 
     default_color = colors[1]
@@ -39,7 +42,7 @@ def analyze_region(
         mode='lines',
         name='Single Family',
         line=dict(color=default_color, width=1, dash='dash'),
-        legendgroup=str(region_name),
+        legendgroup=str(region_id),
     ))
 
     traces.append(go.Scatter(
@@ -48,7 +51,7 @@ def analyze_region(
         mode='lines',
         name='Condo/Co-Op',
         line=dict(color=default_color, width=1, dash='dot'),
-        legendgroup=str(region_name),
+        legendgroup=str(region_id),
     ))
 
     traces.append(go.Scatter(
@@ -57,7 +60,7 @@ def analyze_region(
         mode='lines',
         name='Overall',
         line=dict(color=default_color, width=1.5),
-        legendgroup=str(region_name),
+        legendgroup=str(region_id),
         legendgrouptitle_text=str(region_name),
     ))
     return traces
