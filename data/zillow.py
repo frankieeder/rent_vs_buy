@@ -82,7 +82,7 @@ def read_zillow_file_from_geography_and_metric_wide(geography, zhvi_metric):
     return df_wide
 
 
-def read_zillow_file_from_geography_and_metric(geography, zhvi_metric):
+def read_zillow_file_from_geography_and_metric(geography, zhvi_metric, region_id):
     df_wide = read_zillow_file_from_geography_and_metric_wide(geography, zhvi_metric)
     # st.write(f"Total Wide: {df_wide.memory_usage().sum()}")
     # st.write(df_wide.memory_usage())
@@ -96,22 +96,24 @@ def read_zillow_file_from_geography_and_metric(geography, zhvi_metric):
     overrideable_dtype_columns = list(overrideable_dtype_columns)
     df_wide[overrideable_dtype_columns] = df_wide[overrideable_dtype_columns].astype(dtypes)
 
+    st.write(f"Total Wide w/ Types: {df_wide.memory_usage().sum()}")
+    st.write(df_wide.memory_usage())
+    st.write(df_wide.dtypes)
+    buffer = io.StringIO()
+    df_wide.info(buf=buffer)
+    st.text(buffer.getvalue())
 
-    # st.write(f"Total Wide w/ Types: {df_wide.memory_usage().sum()}")
-    # st.write(df_wide.memory_usage())
-    # st.write(df_wide.dtypes)
-    # buffer = io.StringIO()
-    # df_wide.info(buf=buffer)
-    # st.text(buffer.getvalue())
+    df_wide = df_wide[df_wide['RegionID'] == region_id]
+
     df_melted = melt_df(df_wide)
 
-    # st.write(f"Total Melt: {df_melted.memory_usage().sum()}")
-    # st.write(df_melted.memory_usage())
-    # st.write(df_melted.dtypes)
-    # buffer = io.StringIO()
-    # df_melted.info(buf=buffer)
-    # st.text(buffer.getvalue())
-    # TODO: Cast dtypes to categorical if needed to preserve space. Wide data may help for this too.
+    st.write(f"Total Melt: {df_melted.memory_usage().sum()}")
+    st.write(df_melted.memory_usage())
+    st.write(df_melted.dtypes)
+    buffer = io.StringIO()
+    df_melted.info(buf=buffer)
+    st.text(buffer.getvalue())
+
     return df_melted
 
 
@@ -120,6 +122,6 @@ def read_zillow_files_from_geography_wide(geography):
     return dfs
 
 
-def read_zillow_files_from_geography(geography):
-    dfs = tuple(read_zillow_file_from_geography_and_metric(geography, m) for m in ZHVI_METRICS.keys())
+def read_zillow_files_from_geography(geography, region_id):
+    dfs = tuple(read_zillow_file_from_geography_and_metric(geography, m, region_id) for m in ZHVI_METRICS.keys())
     return dfs

@@ -8,15 +8,14 @@ def analyze_region(
         region_id: int,
         colors=px.colors.sequential.ice_r
 ):
-    unfiltered = read_zillow_files_from_geography(geography)
-    filtered = [df.loc[df['RegionID'] == region_id] for df in unfiltered]
-    overall = filtered.pop(0)
-    single_family = filtered.pop(0)
-    condo = filtered.pop(0)
+    dfs = list(read_zillow_files_from_geography(geography, region_id))
+    overall = dfs.pop(0)
+    single_family = dfs.pop(0)
+    condo = dfs.pop(0)
 
     region_name = overall['RegionName'].values[0]
 
-    bedrooms = filtered
+    bedrooms = dfs
     traces = []
 
     # TODO: Lots of shared params between go.Scatter calls, could be abstracted.
