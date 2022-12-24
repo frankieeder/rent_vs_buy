@@ -12,6 +12,9 @@ def analyze_zip(zip_code, colors=px.colors.sequential.ice_r):
 
     bedrooms = filtered
     traces = []
+
+    # TODO: Lots of shared params between go.Scatter calls, could be abstracted.
+
     # Bedrooms
     for i, bedroom_df in enumerate(bedrooms):
         traces.append(go.Scatter(
