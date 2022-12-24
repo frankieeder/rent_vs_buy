@@ -6,16 +6,6 @@ import plotly.graph_objects as go
 def analyze_zip(zip_code, colors=px.colors.sequential.ice_r):
     unfiltered = read_zillow_files_from_geography('Zip')
     filtered = [df.loc[df['RegionName'] == zip_code] for df in unfiltered]
-    color_map = {
-        'overall': colors[6],
-        'single_family': colors[6],
-        'condo': colors[6],
-        '1_br': colors[0],
-        '2_br': colors[1],
-        '3_br': colors[2],
-        '4_br': colors[3],
-        '5_br': colors[4],
-    }
     overall = filtered.pop(0)
     single_family = filtered.pop(0)
     condo = filtered.pop(0)
