@@ -9,7 +9,9 @@ st.set_page_config(
 )
 
 from plotting import analyze_region
-from data.zillow import read_zillow_files_from_geography, GEOGRAPHIES
+from data.zillow import read_zillow_files_from_geography
+from data.zillow import find_categorical_columns_zhvi_melted
+from data.zillow import GEOGRAPHIES
 import plotly.graph_objects as go
 import plotly.express as px
 
@@ -34,19 +36,38 @@ def compare_regions():
     )
 
     zhvi_dfs = read_zillow_files_from_geography(geography)
+    zhvi_df_overall = zhvi_dfs[0]
+    zhvi_categorical_columns = find_categorical_columns_zhvi_melted(zhvi_df_overall)
+    zhvi_categories_df = zhvi_df_overall[zhvi_categorical_columns]
 
-    options_df = zhvi_dfs[0][['RegionID', 'RegionName']]
-    options_df = options_df.drop_duplicates().sort_values('RegionName')
+    # Isolate and sort options for regions
+    options_df = zhvi_categories_df.drop_duplicates(subset=['RegionID', 'RegionName']).sort_values('RegionName')
     all_region_ids_series = options_df['RegionID']
-    all_region_ids_to_names = options_df.set_index('RegionID')['RegionName'].to_dict()
+    options_df_for_mapping = options_df.set_index('RegionID')
+    all_region_ids_to_names = options_df_for_mapping['RegionName'].to_dict()
+    # If Neighborhood, we'll need additional information to distinguish colliding RegionNames
+    if geography == 'Neighborhood':
+        all_region_ids_to_state = options_df_for_mapping['StateName'].to_dict()
+        all_region_ids_to_county = options_df_for_mapping['CountyName'].to_dict()
     # Set region default to 102001 (RegionID of US) if using metro (i.e. default view)
     region_default = [102001] if geography == 'Metro' else all_region_ids_series.values[0]
+
+    def region_formatter(region_id):
+        """Converts our region_id candidate selections into readable, unique text."""
+        region_name = all_region_ids_to_names[region_id]
+        if geography == 'Neighborhood':
+            state = all_region_ids_to_state[region_id]
+            county = all_region_ids_to_county[region_id]
+            return f"{region_name} ({state} - {county})"
+        else:
+            return region_name
+
     region_ids = st.multiselect(
         label=GEOGRAPHIES[geography],
         options=all_region_ids_series,  # Use ID instead of name directly to avoid collisions
-        max_selections=3,
+        max_selections=len(COLORS),
         default=region_default,
-        format_func=lambda r: all_region_ids_to_names[r]
+        format_func=region_formatter,
     )
     fig = go.Figure()
     with st.spinner('Loading...'):

@@ -36,17 +36,21 @@ def read_zillow_file_from_link(link):
     return df
 
 
-def find_categorical_columns(zhvi):
-    month_start_index = zhvi.columns.to_list().index('2000-01-31')  # TODO: This might be sketchy
-    categorical = zhvi.columns[:month_start_index].to_list()
+def find_categorical_columns_zhvi_wide(zhvi_wide):
+    month_start_index = zhvi_wide.columns.to_list().index('2000-01-31')  # TODO: This might be sketchy
+    categorical = zhvi_wide.columns[:month_start_index].to_list()
     return categorical
 
 
-def melt_df(zhvi):
-    categorical = find_categorical_columns(zhvi)
-    months_of_interest = zhvi.columns[len(categorical):].to_list()
+def find_categorical_columns_zhvi_melted(zhvi_melted):
+    return zhvi_melted.columns[:-2]
 
-    zhvi_melted = zhvi.melt(
+
+def melt_df(zhvi_wide):
+    categorical = find_categorical_columns_zhvi_wide(zhvi_wide)
+    months_of_interest = zhvi_wide.columns[len(categorical):].to_list()
+
+    zhvi_melted = zhvi_wide.melt(
         id_vars=categorical,
         value_vars=months_of_interest,
         var_name='Month',
@@ -59,9 +63,9 @@ def melt_df(zhvi):
 @st.experimental_singleton
 def read_zillow_file_from_geography_and_metric(geography, zhvi_metric):
     link = infer_zhvi_zillow_file_link(geography, zhvi_metric)
-    df = read_zillow_file_from_link(link)
+    df_wide = read_zillow_file_from_link(link)
     # TODO: Is there an efficient way to separate this out if we need the underlying wide files?
-    df_melted = melt_df(df)
+    df_melted = melt_df(df_wide)
     # TODO: Cast dtypes to categorical if needed to preserve space. Wide data may help for this too.
     return df_melted
 
