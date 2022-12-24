@@ -178,6 +178,7 @@ def analyze_zip(zip_code, colors=px.colors.sequential.ice_r):
         name='Overall',
         line=dict(color=default_color, width=1.5),
         legendgroup=str(zip_code),
+        legendgrouptitle_text=str(zip_code),
     ))
     return traces
 
