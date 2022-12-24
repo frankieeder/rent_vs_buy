@@ -146,12 +146,12 @@ def analyze_zip(zip_code):
             y=bedroom_df['ZHVI'],
             mode='lines',
             name=f'{i + 1} Bedroom',
-            line=dict(color=px.colors.sequential.ice[i], width=0.5),
+            line=dict(color=px.colors.sequential.ice_r[i+4], width=0.5),
             fill='tonexty' if i > 0 else None,
             legendgroup=zip_code,
         ))
 
-    default_color = 'white'
+    default_color = px.colors.sequential.ice_r[2]
     # Single Family
     fig.add_trace(go.Scatter(
         x=single_family['Month'],
