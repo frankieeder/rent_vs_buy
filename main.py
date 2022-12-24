@@ -148,8 +148,7 @@ def analyze_zip(zip_code):
         color_discrete_map=color_map,
         line_dash='line_marker'
     )
-    fig.show()
-    x = 2
+    return fig
 
 
 def home_prices_by_zip():
