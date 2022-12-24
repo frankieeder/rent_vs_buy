@@ -50,9 +50,10 @@ def compare_regions():
     options_df_for_mapping = options_df.set_index('RegionID')
     all_region_ids_to_names = options_df_for_mapping['RegionName'].to_dict()
     # If Neighborhood, we'll need additional information to distinguish colliding RegionNames
-    if geography == 'Neighborhood':
+    if geography in ['Neighborhood', 'City', 'County']:
         all_region_ids_to_state = options_df_for_mapping['StateName'].to_dict()
-        all_region_ids_to_county = options_df_for_mapping['CountyName'].to_dict()
+        if geography == 'Neighborhood':
+            all_region_ids_to_county = options_df_for_mapping['CountyName'].to_dict()
     # Set region default to 102001 (RegionID of US) if using metro (i.e. default view)
     region_default = [102001] if geography == 'Metro' else all_region_ids_series.values[0]
 
@@ -62,7 +63,10 @@ def compare_regions():
         if geography == 'Neighborhood':
             state = all_region_ids_to_state[region_id]
             county = all_region_ids_to_county[region_id]
-            return f"{region_name} ({state} - {county})"
+            return f"{region_name}, {county}, {state}"
+        elif geography in ['City', 'County']:
+            state = all_region_ids_to_state[region_id]
+            return f"{region_name}, {state}"
         else:
             return region_name
 
