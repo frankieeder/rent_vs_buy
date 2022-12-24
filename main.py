@@ -120,66 +120,66 @@ def naive_ptr_by_zip():
     fig.show()
 
 
-def analyze_zip(zip_code):
+def analyze_zip(zip_code, colors=px.colors.sequential.ice_r):
     unfiltered = pull_all_zhvi_data_melted()
     filtered = [df.loc[df['RegionName'] == zip_code] for df in unfiltered]
     color_map = {
-        'overall': px.colors.sequential.ice_r[6],
-        'single_family': px.colors.sequential.ice_r[6],
-        'condo': px.colors.sequential.ice_r[6],
-        '1_br': px.colors.sequential.ice_r[0],
-        '2_br': px.colors.sequential.ice_r[1],
-        '3_br': px.colors.sequential.ice_r[2],
-        '4_br': px.colors.sequential.ice_r[3],
-        '5_br': px.colors.sequential.ice_r[4],
+        'overall': colors[6],
+        'single_family': colors[6],
+        'condo': colors[6],
+        '1_br': colors[0],
+        '2_br': colors[1],
+        '3_br': colors[2],
+        '4_br': colors[3],
+        '5_br': colors[4],
     }
     overall = filtered.pop(0)
     single_family = filtered.pop(0)
     condo = filtered.pop(0)
 
     bedrooms = filtered
-    fig = go.Figure()
+    traces = []
     # Bedrooms
     for i, bedroom_df in enumerate(bedrooms):
-        fig.add_trace(go.Scatter(
+        traces.append(go.Scatter(
             x=bedroom_df['Month'],
             y=bedroom_df['ZHVI'],
             mode='lines',
             name=f'{i + 1} Bedroom',
-            line=dict(color=px.colors.sequential.ice_r[i+4], width=0.5),
+            line=dict(color=colors[i+2], width=0.5),
             fill='tonexty' if i > 0 else None,
-            legendgroup=zip_code,
+            legendgroup=str(zip_code),
         ))
 
-    default_color = px.colors.sequential.ice_r[2]
+    default_color = colors[1]
     # Single Family
-    fig.add_trace(go.Scatter(
+    traces.append(go.Scatter(
         x=single_family['Month'],
         y=single_family['ZHVI'],
         mode='lines',
         name='Single Family',
-        line=dict(color=default_color, width=0.5, dash='dash'),
-        legendgroup=zip_code,
+        line=dict(color=default_color, width=1, dash='dash'),
+        legendgroup=str(zip_code),
     ))
 
-    fig.add_trace(go.Scatter(
+    traces.append(go.Scatter(
         x=condo['Month'],
         y=condo['ZHVI'],
         mode='lines',
         name='Condo/Co-Op',
-        line=dict(color=default_color, width=0.5, dash='dot'),
-        legendgroup=zip_code,
+        line=dict(color=default_color, width=1, dash='dot'),
+        legendgroup=str(zip_code),
     ))
 
-    fig.add_trace(go.Scatter(
+    traces.append(go.Scatter(
         x=overall['Month'],
         y=overall['ZHVI'],
         mode='lines',
         name='Overall',
-        line=dict(color=default_color, width=0.5),
-        legendgroup=zip_code,
+        line=dict(color=default_color, width=1.5),
+        legendgroup=str(zip_code),
     ))
-    return fig
+    return traces
 
 
     for name, df in zip(color_map.keys(), filtered):
