@@ -41,12 +41,12 @@ def compare_regions():
         label=GEOGRAPHIES[geography],
         options=all_regions,
         max_selections=3,
-        default=[90210],  # TODO: Needs to be updated
+        default=all_regions[0],
     )
     fig = go.Figure()
     with st.spinner('Loading...'):
         for i, region in enumerate(regions):
-            traces = analyze_region(geography, (region), colors=COLORS[i])
+            traces = analyze_region(geography, region, colors=COLORS[i])
             fig.add_traces(traces)
         st.plotly_chart(fig, use_container_width=True)
 
