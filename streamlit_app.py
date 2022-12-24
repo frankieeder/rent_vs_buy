@@ -17,7 +17,7 @@ def compare_zips():
     st.write('Compare Zips...')
     with st.spinner('Loading...'):
         fig = analyze_zip(90210)
-        st.plotly_chart(fig)
+        st.plotly_chart(fig, use_container_width=True)
 
 
 if __name__ == '__main__':
