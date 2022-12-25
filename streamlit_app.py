@@ -29,8 +29,10 @@ def main_page():
 def compare_regions():
     st.title("Rent vs. Buy")
     st.header("Comparison Between Regions over Time")
+    st.write('This app helps to visualize [Zillow Research Data](https://www.zillow.com/research/data/) to compare rental and purchase '
+             'real estate prices in and across regions.')
     st.write('Please select a Geography below to select the scale on which you want to compare regions, '
-             'then select your regions of interest!')
+             'then select your regions of interest.')
     st.markdown('---')
     geography = st.selectbox(
         label='Geography',
