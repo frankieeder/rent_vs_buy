@@ -55,7 +55,6 @@ AVAILABLE_METRICS = {
         'Rent Index'
     )
 }
-st.write()
 
 METRIC_NAME = 'ZHVI'
 TIME_NAME = 'Month'
