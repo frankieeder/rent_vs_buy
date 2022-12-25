@@ -12,9 +12,8 @@ from plotting import analyze_region
 from data.zillow import read_zillow_files_from_geography_wide
 from data.zillow import find_categorical_columns_zhvi_wide
 from data.zillow import GEOGRAPHIES
-import plotly.graph_objects as go
 import plotly.express as px
-
+from plotly.subplots import make_subplots
 
 COLORS = [
     px.colors.sequential.ice_r,
@@ -40,7 +39,7 @@ def compare_regions():
     )
 
     zhvi_dfs = read_zillow_files_from_geography_wide(geography)
-    zhvi_df_overall = zhvi_dfs[0]
+    zhvi_df_overall = zhvi_dfs['Overall']
     zhvi_categorical_columns = find_categorical_columns_zhvi_wide(zhvi_df_overall)
     zhvi_categories_df = zhvi_df_overall[zhvi_categorical_columns]
 
@@ -77,11 +76,16 @@ def compare_regions():
         default=region_default,
         format_func=region_formatter,
     )
-    fig = go.Figure()
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
     with st.spinner('Loading...'):
         for i, region_id in enumerate(region_ids):
-            traces = analyze_region(geography, region_id, colors=COLORS[i])
-            fig.add_traces(traces)
+            traces_buy, traces_rent = analyze_region(geography, region_id, colors=COLORS[i])
+            fig.add_traces(traces_buy)
+            for trace in traces_rent:
+                fig.add_trace(trace, secondary_y=True)
+
+        fig.update_yaxes(title_text="Buy - USD", secondary_y=False)
+        fig.update_yaxes(title_text="Rent - USD", secondary_y=True)
         st.plotly_chart(fig, use_container_width=True)
 
 
