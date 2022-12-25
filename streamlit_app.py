@@ -83,9 +83,6 @@ def compare_regions():
             fig.add_traces(traces_buy)
             for trace in traces_rent:
                 fig.add_trace(trace, secondary_y=True)
-
-        fig.update_yaxes(title_text="Buy - USD", secondary_y=False)
-        fig.update_yaxes(title_text="Rent - USD", secondary_y=True)
         st.plotly_chart(fig, use_container_width=True)
 
 
